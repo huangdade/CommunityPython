@@ -16,6 +16,7 @@ class AddrelativesHandler(tornado.web.RequestHandler):
         row = self.application.dbapi.getRelationByUsername(u_name, r_name)
         if row == 0:
             self.application.dbapi.addRelationByUsername(u_name, r_name)
+            self.application.dbapi.addtempRelationByUsername(u_name, r_name)
             add_message = {'state': 1}
         else:
             add_message = {'state': 0}

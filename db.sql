@@ -144,3 +144,21 @@ CREATE TABLE tpu
 	primary key(id),
 	foreign key(usrid) references user(id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+/*
+临时用户关系表
+id:自增id
+uid:用户id
+oid:对应用户id
+kind:关系类型(关注好友，亲友等等)
+*/
+CREATE TABLE temprelation
+(
+	id int NOT NULL AUTO_INCREMENT,
+	uid int NOT NULL,
+	cid int NOT NULL,
+	kind int NOT NULL,
+	primary key(id),
+	foreign key(uid) references user(id),
+	foreign key(cid) references user(id)
+);
