@@ -7,8 +7,10 @@ class EventHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.write("<p>eventHandler</p><form action='/api/event' method='post'><input type='submit' value='submit'></form>")
 
+	#return format
+	#{event:{},support:{0:{},1:{}}}
 	def post(self):
-		#conteng=self.request.body
+		#content=self.request.body
 		content='{"eventid":1}'
 		jobj=json.loads(content)
 		helpevent=self.application.dbapi.getEventByEventId(jobj['eventid'])
