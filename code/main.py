@@ -1,7 +1,7 @@
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
-import os,MySQLdb,dbapi
+import os,MySQLdb,dbapi,util
 from handler import *
 
 #login url handler
@@ -34,9 +34,11 @@ class app(tornado.web.Application):
 			(r"/api/quitaid",QuitaidHandler.QuitaidHandler),
 			(r"/api/event",EventHandler.EventHandler),
 			(r"/api/updatecid",UpdateCid.UpdateCid),
+			(r"/api/updateuserinfo",UpdateUserInfoHandler.UpdateUserInfoHandler),
 			(r"/api/getAround",GetArroundEvent.GetArroundEvent)]
 		tornado.web.Application.__init__(self,handlers,**settings)
 		self.dbapi=dbapi.dbapi()
+		self.util=util.util()
 		
 
 if __name__=="__main__":

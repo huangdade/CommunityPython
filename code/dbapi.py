@@ -42,13 +42,25 @@ class dbapi:
 		cursor.close()
 		return
 
-	#get user all info in user+info
+	#get user userfull info in user+info
 	#pre con: user exist
 	#after: return a dict result include all info of user
 	def getUserAllinfobyName(self,name):
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 		uid = self.getUserByUserName(name)['id']
 		return self.getUsermassegeByUserId(uid)
+
+	#get user all info in user+info
+	#pre con: user exist
+	#after: return a dict result include all info of user
+	def getUserInfobyName(self,name):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql = "select * from user,info where user.name = %s and user.id = info.id"
+		param = (name,)
+		cursor.execute(sql,param)
+		result=cursor.fetchone()
+		cursor.close()
+		return result
 
 	def CheckRelationbyId(self,userid):
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
@@ -61,7 +73,7 @@ class dbapi:
 
 	def getUsermassegeByUserId(self,userid):
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-		sql="select user.name,info.name,info.sex,info.age,info.address,info.illness,info.credit,info.score from user ,info where user.id=%s and info.id=%s"
+		sql="select user.name,info.name as realname,info.sex,info.age,info.address,info.illness,info.credit,info.score from user ,info where user.id=%s and info.id=%s"
 		param=(userid,userid)
 		cursor.execute(sql,param)
 		result=cursor.fetchone()
@@ -184,9 +196,11 @@ class dbapi:
 	# change a event sate to 1
 	#in order to end a event
 	def changeEventState(self,eid):
-		cursor = self.db.cursor()
-		sql ="update event set state= %s where id = %s"
-		param = (1,eid)
+		cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		cursor.execute("select now()")
+		currentTime=cursor.fetchone()
+		sql ="update event set state= %s ,endtime = %s where id = %s"
+		param = (1,currentTime['now()'],eid)
 		cursor.execute(sql,param)
 		self.db.commit()
 		cursor.close()
@@ -239,6 +253,93 @@ class dbapi:
 		result = []
 		for row in cursor.fetchall():
 			result.append(row)
+		cursor.close()
+		return result
+
+	#updateuser credit score in info,use for givecredit
+	#pre cond:eid,uid exist,score >=0
+	#after: update data credit,score in info
+	def updateUserCreditScore(self,eid,uid,score):
+		cursor = self.db.cursor()
+		sql = "update info set score = (score + %s)/2,credit = (credit+5)/3 where id = %s"
+		param = (score,uid)
+		try:
+			cursor.execute(sql,param)
+			self.db.commit()
+		except:
+			self.db.rollback()
+		cursor.close()
+		return
+
+	#update user info by username,sex,age,phone,address,illness
+	#pre cond:uid exist
+	#after: update user info for what it pass
+	def updateUserinfo(self,uid,message):
+		cursor = self.db.cursor()
+		result = []
+		if("username" in message):
+			user = self.getUserByUserName(message['username'])
+			if(user is not None):
+				return  {"state":3,"desc":"username exist"}
+			sql = "update user set name = %s where id = %s"
+			param = (message["username"],uid)
+			try:
+				cursor.execute(sql,param)
+				self.db.commit()
+			except:
+				self.db.rollback()
+				return {"state":2,"desc":"db access error username"}
+			result.append(str({"state":1,"desc":"update username success"}))
+		if("sex" in message):
+			sql = "update info set sex = %s where id = %s"
+			param = (message["sex"],uid)
+			try:
+				cursor.execute(sql,param)
+				self.db.commit()
+			except:
+				self.db.rollback()
+				return {"state":2,"desc":"db access error sex"}
+			result.append(str({"state":1,"desc":"update sex success"}))
+		if("age" in message):
+			sql = "update info set age = %s where id = %s"
+			param = (message["age"],uid)
+			try:
+				cursor.execute(sql,param)
+				self.db.commit()
+			except:
+				self.db.rollback()
+				return {"state":2,"desc":"db access error age"}
+			result.append(str({"state":1,"desc":"update age success"}))
+		"""if("phone" in message):
+			sql = "update info set phone = %s where id = %s"
+			param = (message["phone"],uid)
+			try:
+				cursor.execute(sql,param)
+				self.db.commit()
+			except:
+				self.db.rollback()
+				return {"state":2,"desc":"db access error age"}
+			result.append(str({"state":1,"desc":"update age success"}))"""
+		if("address" in message):
+			sql = "update info set address = %s where id = %s"
+			param = (message["address"],uid)
+			try:
+				cursor.execute(sql,param)
+				self.db.commit()
+			except:
+				self.db.rollback()
+				return {"state":2,"desc":"db access error address"}
+			result.append(str({"state":1,"desc":"update address success"}))
+		if("illness" in message):
+			sql = "update info set illness = %s where id = %s"
+			param = (message["illness"],uid)
+			try:
+				cursor.execute(sql,param)
+				self.db.commit()
+			except:
+				self.db.rollback()
+				return {"state":2,"desc":"db access error illness"}
+			result.append(str({"state":1,"desc":"update illness success"}))
 		cursor.close()
 		return result
 
@@ -472,6 +573,7 @@ class dbapi:
 		cursor.execute(sql,param)
 		self.db.commit()
 		cursor.close()
+		self.updateUserCreditScore(eid,usrid["id"],credit)
 		return {"errorCode":200,"errorDesc":""}
 	#07/10
 

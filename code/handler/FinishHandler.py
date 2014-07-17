@@ -9,7 +9,7 @@ class FinishHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		#content =self.request.body
-		content = '{"username":"oo121o","eventid":2}'
+		content = '{"username":"test1","eventid":1}'
 		j = json.loads(content)
 		uid = self.application.dbapi.getUserByUserName(j['username'])["id"]
 		event = self.application.dbapi.getEventByEventId(j['eventid'])
