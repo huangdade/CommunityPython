@@ -9,8 +9,8 @@ class LoginHandler(tornado.web.RequestHandler):
 		self.write("<p>LoginHandler</p><form action='/api/login' method='post'><input type='submit' value='submit'></form>")
 
 	def post(self):
-		#content =self.request.body
-		content = '{"username":"12","password":"1"}'
+		content =self.request.body
+		#content = '{"username":"12","password":"1"}'
 		j = json.loads(content)
 		if(j['username'].strip()=='' or j['password'].strip()==''):
 			self.write("{'state':1}")
@@ -28,5 +28,5 @@ class LoginHandler(tornado.web.RequestHandler):
 		self.application.dbapi.updateUserstate(user['id'],1)
 		self.write("{'state':3}")
 		print("Login success")
-		print self.application.util.getAvatar("12",self.application.dbapi)
+		#print self.application.util.getAvatar("12",self.application.dbapi)
 		return

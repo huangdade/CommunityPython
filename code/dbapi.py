@@ -9,8 +9,8 @@ import MySQLdb,json
 class dbapi:
 	def __init__(self):
 		self.host="localhost"
-		self.user="root"
-		self.passwd="root"
+		self.user="comhelp"
+		self.passwd="20140629"
 		self.dbname="community"
 		self.charset="utf8"
 		self.db=MySQLdb.connect(host=self.host,user=self.user,passwd=self.passwd,db=self.dbname,charset=self.charset)
@@ -73,7 +73,7 @@ class dbapi:
 
 	def getUsermassegeByUserId(self,userid):
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-		sql="select user.name,info.name as realname,info.sex,info.age,info.address,info.illness,info.credit,info.score from user ,info where user.id=%s and info.id=%s"
+		sql="select user.id,user.name,info.name as realname,info.sex,info.age,info.address,info.illness,info.credit,info.score from user ,info where user.id=%s and info.id=%s"
 		param=(userid,userid)
 		cursor.execute(sql,param)
 		result=cursor.fetchone()

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
@@ -15,10 +16,10 @@ class CheckrelativesHandler(tornado.web.RequestHandler):
 		if re!=():
 			relatives=[]
 			for row in re:
-				name=self.application.dbapi.getUsermassegeByUserId(row["cid"])
-				print name
-				relatives.append(name)
-			data={'state':1,'ralatives':str(relatives)}
+				info=self.application.dbapi.getUsermassegeByUserId(row["cid"])
+				#relatives.append('{"info":'+str(info)+',"avatar":'+self.application.util.getAvatarbyUid(info['id'])+'}')
+				relatives.append(info)
+			data={'state':1,'ralatives':relatives}
 		else:
 			data={'state':1,'relatives':'[]'}
 		self.write(data)
