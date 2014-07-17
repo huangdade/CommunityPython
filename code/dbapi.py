@@ -434,6 +434,16 @@ class dbapi:
 		self.db.commit()
 		cursor.close()
 
+	def addtempRelationByUsername(self, u_name, r_name):
+		result = self.getUserByUserName(u_name)
+		u_id = str(result["id"])
+		result = self.getUserByUserName(r_name)
+		r_id = str(result["id"])
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="INSERT INTO relation (usrid, cid, kind) VALUES ('" + u_id + "', '" + r_id + "', '1')"
+		cursor.execute(sql)
+		cursor.close()
+
 	def addaidhelper(self, u_name, e_id):
 		result = self.getUserByUserName(u_name)
 		u_id = str(result["id"])
