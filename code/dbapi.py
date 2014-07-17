@@ -633,5 +633,21 @@ class dbapi:
 		return {"errorCode":200,"errorDesc":""}
 	#07/10
 
+	def getSupportsByEventId(self,eid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="select * from support where eid=%s"
+		param=(eid,)
+		cursor.execute(sql,param)
+		result=cursor.fetchall()
+		if(result==tuple()):
+			return dict()
+		else:
+			i=0
+			re=dict()
+			while(i<len(result)):
+				re[i]=result[i]
+				i+=1
+			return re
+
 	def __del__(self):
 		self.db.close()
