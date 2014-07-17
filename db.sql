@@ -174,6 +174,24 @@ CREATE TABLE tpu
 	foreign key(usrid) references user(id)
 	ON DELETE CASCADE
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+/*
+临时用户关系表
+id:自增id
+uid:用户id
+oid:对应用户id
+kind:关系类型(关注好友，亲友等等)
+*/
+CREATE TABLE temprelation
+(
+	id int NOT NULL AUTO_INCREMENT,
+	uid int NOT NULL,
+	cid int NOT NULL,
+	kind int NOT NULL,
+	primary key(id),
+	foreign key(uid) references user(id),
+	foreign key(cid) references user(id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*
 添加6用户（3男3女）：
 */
@@ -233,3 +251,6 @@ insert into support(eid,usrid,content,time) values(2,5,"5援助事件2","2014-07
 
 insert into support(eid,usrid,content,time) values(3,3,"3援助事件3","2014-07-15 08:10:54");
 insert into support(eid,usrid,content,time) values(3,5,"5援助事件4","2014-07-15 08:10:54");
+
+
+
