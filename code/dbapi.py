@@ -457,15 +457,7 @@ class dbapi:
 		param=(eid,)
 		cursor.execute(sql,param)
 		result=cursor.fetchall()
-		if(result==tuple()):
-			return dict()
-		else:
-			i=0
-			re=dict()
-			while(i<len(result)):
-				re[i]=result[i]
-				i+=1
-			return re
+		return list(result)
 
 	def __del__(self):
 		self.db.close()
