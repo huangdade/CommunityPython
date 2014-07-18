@@ -16,6 +16,13 @@ class EventHandler(tornado.web.RequestHandler):
 		helpevent=self.application.dbapi.getEventByEventId(jobj['eventid'])
 		result={}
 		if(helpevent):
-			result['event']=(helpevent)
+			result['event']=helpevent
 			result['support']=self.application.dbapi.getSupportsByEventId(jobj['eventid'])
-		return result
+
+			for support in result['support']:
+				user=self.application.dbapi.getUserByUserId(support['usrid'])
+				if(user):
+					support['username']=user['name'];
+					avatar=self.application.util.getAvatar(user['name'],self.application.dbapi)
+					support['avatar']=avatar
+		self.write(str(result));
