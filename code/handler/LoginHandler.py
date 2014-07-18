@@ -10,7 +10,7 @@ class LoginHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		content =self.request.body
-		#content = '{"username":"12","password":"1"}'
+		#content = '{"username":"12","password":"1","latitude":23.000000,"longitude":23.000000}'
 		j = json.loads(content)
 		if(j['username'].strip()=='' or j['password'].strip()==''):
 			self.write("{'state':1}")
@@ -25,6 +25,8 @@ class LoginHandler(tornado.web.RequestHandler):
 			self.write("{'state':2}")
 			print "passwd incorrect"
 			return
+		if("latitude" in j):
+			self.application.dbapi.updateUseLBS(j['latitude'],j['longitude'],user['id'])
 		self.application.dbapi.updateUserstate(user['id'],1)
 		self.write("{'state':3}")
 		print("Login success")

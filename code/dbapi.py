@@ -11,6 +11,8 @@ class dbapi:
 		self.host="localhost"
 		self.user="comhelp"
 		self.passwd="20140629"
+		#self.user="root"
+		#self.passwd="root"
 		self.dbname="community"
 		self.charset="utf8"
 		self.db=MySQLdb.connect(host=self.host,user=self.user,passwd=self.passwd,db=self.dbname,charset=self.charset)
@@ -37,6 +39,15 @@ class dbapi:
 		cursor = self.db.cursor()
 		sql = "update user set state = %s where id = %s"
 		param =(state,uid)
+		cursor.execute(sql,param)
+		self.db.commit()
+		cursor.close()
+		return
+
+	def updateUseLBS(self,latitude,longitude,uid):
+		cursor = self.db.cursor()
+		sql = "update info set latitude = %s , longitude = %s where id = %s"
+		param =(latitude,longitude,uid)
 		cursor.execute(sql,param)
 		self.db.commit()
 		cursor.close()
@@ -86,6 +97,16 @@ class dbapi:
 		param=(eventid,)
 		cursor.execute(sql,param)
 		result=cursor.fetchone()
+		cursor.close()
+		return result
+
+	def getEventandUserByEventId(self,eventid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="select user.name,content,starttime as time,event.kind as kind,event.id from event,user where event.id=%s"
+		param=(eventid,)
+		cursor.execute(sql,param)
+		result=cursor.fetchone()
+		result['time'] = result['time'].strftime('%Y-%m-%d %H:%M:%S')
 		cursor.close()
 		return result
 
@@ -290,6 +311,7 @@ class dbapi:
 		cursor.execute(sql,param)
 		result = []
 		for row in cursor.fetchall():
+			row['starttime'] = row['starttime'].strftime('%Y-%m-%d %H:%M:%S')
 			result.append(row)
 		cursor.close()
 		return result
@@ -308,7 +330,7 @@ class dbapi:
 		cursor.execute(sql,param)
 		result = []
 		for row in cursor.fetchall():
-			result.append(row)
+			result.append(row['cid'])
 		cursor.close()
 		return result
 

@@ -2,6 +2,7 @@
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
+from tornado.escape import *
 import json
 
 class HelpmessageHandler(tornado.web.RequestHandler):
@@ -15,9 +16,11 @@ class HelpmessageHandler(tornado.web.RequestHandler):
 		result = self.application.dbapi.addEventByUserName(jobj["username"],jobj["message"])
 		#add push message,make all distance 5km
 		if(result["state"] == 1):
+			eventinfo = self.application.dbapi.getEventandUserByEventId(result['eventid'])
+			print '{"type":"help","data":'+json_encode(eventinfo)+'}'
 			info = self.application.dbapi.getUserInfobyName(jobj["username"])
 			cidlist = self.application.dbapi.getUserCidAround(info["longitude"],info["latitude"],5)
-			self.application.push.pushToList(cidlist,content)
+			self.application.push.pushToList(cidlist,'{"type":"help","data":'+json_encode(eventinfo)+'}')
 		
-		self.write(str(result))
+		self.write(json_encode(result))
 		return

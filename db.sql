@@ -2,6 +2,7 @@
 drop table IF EXISTS support;
 drop table IF EXISTS helper;
 drop table IF EXISTS follow;
+drop table IF EXISTS temprelation;
 drop table IF EXISTS event;
 drop table IF EXISTS relation;
 drop table IF EXISTS info;
@@ -195,19 +196,19 @@ CREATE TABLE temprelation
 /*
 添加6用户（3男3女）：
 */
-insert into user(name,kind,password,state) values("test1",1,"passwordtest1",1);
-insert into user(name,kind,password,state) values("test2",2,"密码test2",1);
-insert into user(name,kind,password,state) values("test3",3,"passwordtest3",1);
-insert into user(name,kind,password,state) values("测试test4",1,"passwordtest4",0);
-insert into user(name,kind,password,state) values("test5",2,"passwordtest5",1);
-insert into user(name,kind,password,state) values("test6",3,"passwordtest6",0);
+insert into user(name,kind,password,state) values("test1",1,"1",1);
+insert into user(name,kind,password,state) values("test2",2,"t2",1);
+insert into user(name,kind,password,state) values("test3",3,"3",1);
+insert into user(name,kind,password,state) values("test4",1,"4",0);
+insert into user(name,kind,password,state) values("test5",2,"5",1);
+insert into user(name,kind,password,state) values("test6",3,"6",0);
 
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(1,"test1cardid","realtest1",1,21,"广州耶1","你才有病",0,0,23.000000,23.000000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(2,"test2cardid","realtest2",1,25,"广州耶2","我有病",0,0,23.001000,23.000000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(3,"测试test3cardid","realtest3",1,46,"广州耶3","你才有病",0,0,23.000000,23.001000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(4,"test4cardid","测试realtest4",2,21,"广州耶4","我有病",0,0,23.00000,24.000000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(5,"test5cardid","realtest5",2,15,"广州耶5","你才有病",0,0,24.000000,23.000000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(6,"test6cardid","realtest6",2,65,"广州耶6","我有病",0,0,25.000000,25.000000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(1,"test1cardid","realtest1",1,21,"Guangzhou","illness",0,0,23.000000,23.000000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(2,"test2cardid","realtest2",1,25,"Guangzhou","illness",0,0,23.001000,23.000000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(3,"test3cardid","realtest3",1,46,"Guangzhou","illness",0,0,23.000000,23.001000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(4,"test4cardid","realtest4",2,21,"Guangzhou","illness",0,0,23.00000,24.000000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(5,"test5cardid","realtest5",2,15,"Guangzhou","illness",0,0,24.000000,23.000000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(6,"test6cardid","realtest6",2,65,"Guangzhou","illness",0,0,25.000000,25.000000);
 /*
 绑定关系1->2,1->4,2->6,2->5:
 */
@@ -221,9 +222,9 @@ insert into relation(usrid,cid,kind) values(2,5,2);
 事件1：3发起 生活2
 事件1：6发起 健康3
 */
-insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(1,1,0,"安全事件啦",23.001000,23.001000,"2014-07-14 16:55:54");
-insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(3,2,0,"生活事件啦",25.001000,23.001000,"2014-07-15 08:45:54");
-insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(6,3,0,"健康事件啦",23.001020,23.001030,"2014-07-15 08:00:54");
+insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(1,1,0,"event1",23.001000,23.001000,"2014-07-14 16:55:54");
+insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(3,2,0,"event2",25.001000,23.001000,"2014-07-15 08:45:54");
+insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(6,3,0,"event3",23.001020,23.001030,"2014-07-15 08:00:54");
 
 /*
 添加helper
@@ -251,6 +252,3 @@ insert into support(eid,usrid,content,time) values(2,5,"5援助事件2","2014-07
 
 insert into support(eid,usrid,content,time) values(3,3,"3援助事件3","2014-07-15 08:10:54");
 insert into support(eid,usrid,content,time) values(3,5,"5援助事件4","2014-07-15 08:10:54");
-
-
-

@@ -2,6 +2,7 @@
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
+from tornado.escape import *
 import os,json
 class CheckrelativesHandler(tornado.web.RequestHandler):
 	def get(self):
