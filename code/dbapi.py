@@ -9,10 +9,10 @@ import MySQLdb,json
 class dbapi:
 	def __init__(self):
 		self.host="localhost"
-		self.user="comhelp"
-		self.passwd="20140629"
-		#self.user="root"
-		#self.passwd="root"
+		#self.user="comhelp"
+		#self.passwd="20140629"
+		self.user="root"
+		self.passwd="root"
 		self.dbname="community"
 		self.charset="utf8"
 		self.db=MySQLdb.connect(host=self.host,user=self.user,passwd=self.passwd,db=self.dbname,charset=self.charset)
@@ -102,7 +102,7 @@ class dbapi:
 
 	def getEventandUserByEventId(self,eventid):
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-		sql="select user.name,content,starttime as time,event.kind as kind,event.id from event,user where event.id=%s"
+		sql="select user.name,content,starttime as time,event.kind as kind,event.id as id, event.latitude as latitude,event.longitude as longitude from event,user where event.id=%s"
 		param=(eventid,)
 		cursor.execute(sql,param)
 		result=cursor.fetchone()
@@ -670,8 +670,11 @@ class dbapi:
 		sql="select * from support where eid=%s"
 		param=(eid,)
 		cursor.execute(sql,param)
-		result=cursor.fetchall()
-		return list(result)
+		result=[]
+		for item in cursor.fetchall():
+			item['time'] = item['time'].strftime('%Y-%m-%d %H:%M:%S')
+			result.append(item)
+		return result
 
 	def __del__(self):
 		self.db.close()

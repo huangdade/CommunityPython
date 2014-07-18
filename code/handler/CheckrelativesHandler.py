@@ -19,8 +19,8 @@ class CheckrelativesHandler(tornado.web.RequestHandler):
 			for row in re:
 				info=self.application.dbapi.getUsermassegeByUserId(row["cid"])
 				#relatives.append('{"info":'+str(info)+',"avatar":'+self.application.util.getAvatarbyUid(info['id'])+'}')
-				relatives.append(info)
-			data={'state':1,'ralatives':relatives}
+				relatives.append(json_encode(info))
+			data={'state':1,'ralatives':json_encode(relatives)}
 		else:
 			data={'state':1,'relatives':'[]'}
 		self.write(data)

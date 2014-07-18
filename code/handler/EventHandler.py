@@ -1,6 +1,7 @@
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
+from tornado.escape import *
 import json
 
 class EventHandler(tornado.web.RequestHandler):
@@ -13,7 +14,7 @@ class EventHandler(tornado.web.RequestHandler):
 		#content=self.request.body
 		content='{"eventid":1}'
 		jobj=json.loads(content)
-		helpevent=self.application.dbapi.getEventByEventId(jobj['eventid'])
+		helpevent=self.application.dbapi.getEventandUserByEventId(jobj['eventid'])
 		result={}
 		if(helpevent):
 			result['event']=helpevent
@@ -23,6 +24,7 @@ class EventHandler(tornado.web.RequestHandler):
 				user=self.application.dbapi.getUserByUserId(support['usrid'])
 				if(user):
 					support['username']=user['name'];
-					avatar=self.application.util.getAvatar(user['name'],self.application.dbapi)
-					support['avatar']=avatar
-		self.write(str(result));
+					#avatar=self.application.util.getAvatar(user['name'],self.application.dbapi)
+					#support['avatar']=avatar
+		print json_encode(result)
+		self.write(json_encode(result));

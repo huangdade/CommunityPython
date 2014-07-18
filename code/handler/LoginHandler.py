@@ -12,9 +12,9 @@ class LoginHandler(tornado.web.RequestHandler):
 		content =self.request.body
 		#content = '{"username":"12","password":"1","latitude":23.000000,"longitude":23.000000}'
 		j = json.loads(content)
-		if(j['username'].strip()=='' or j['password'].strip()==''):
+		if(j['username'].strip()=='' ):
 			self.write("{'state':1}")
-			print "username or password is null"
+			print "username is null"
 			return
 		user = self.application.dbapi.getUserByUserName(j['username'])
 		if(user is None):
