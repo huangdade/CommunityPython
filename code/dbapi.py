@@ -162,7 +162,7 @@ class dbapi:
 	#delect follow uid->eid
 	def delectFollow(self,uid,eid):
 		cursor = self.db.cursor()
-		sql = "delete follow where eid = %s and usrid = %s"
+		sql = "delete from follow where eid = %s and usrid = %s"
 		param = (eid,uid)
 		try:
 			cursor.execute(sql,param)
