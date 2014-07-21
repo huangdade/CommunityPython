@@ -107,6 +107,8 @@ class dbapi:
 		cursor.execute(sql,param)
 		result=cursor.fetchone()
 		result['time'] = result['time'].strftime('%Y-%m-%d %H:%M:%S')
+		result['longitude'] = float(result['longitude'])
+		result['latitude'] = float(result['latitude'])
 		cursor.close()
 		return result
 

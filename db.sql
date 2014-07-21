@@ -203,12 +203,12 @@ insert into user(name,kind,password,state) values("test4",1,"4",0);
 insert into user(name,kind,password,state) values("test5",2,"5",1);
 insert into user(name,kind,password,state) values("test6",3,"6",0);
 
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(1,"test1cardid","realtest1",1,21,"Guangzhou","illness",0,0,23.000000,23.000000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(2,"test2cardid","realtest2",1,25,"Guangzhou","illness",0,0,23.001000,23.000000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(3,"test3cardid","realtest3",1,46,"Guangzhou","illness",0,0,23.000000,23.001000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(4,"test4cardid","realtest4",2,21,"Guangzhou","illness",0,0,23.00000,24.000000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(5,"test5cardid","realtest5",2,15,"Guangzhou","illness",0,0,24.000000,23.000000);
-insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(6,"test6cardid","realtest6",2,65,"Guangzhou","illness",0,0,25.000000,25.000000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(1,"test1cardid","realtest1",1,21,"Guangzhou","illness",0,0,23.070000,113.400000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(2,"test2cardid","realtest2",1,25,"Guangzhou","illness",0,0,23.070000,113.400000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(3,"test3cardid","realtest3",1,46,"Guangzhou","illness",0,0,23.070000,113.400000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(4,"test4cardid","realtest4",2,21,"Guangzhou","illness",0,0,23.070000,113.400000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(5,"test5cardid","realtest5",2,15,"Guangzhou","illness",0,0,23.070000,113.400000);
+insert into info(id,cardid,name,sex,age,address,illness,credit,score,latitude,longitude) values(6,"test6cardid","realtest6",2,65,"Guangzhou","illness",0,0,23.070000,113.400000);
 /*
 绑定关系1->2,1->4,2->6,2->5:
 */
@@ -222,9 +222,9 @@ insert into relation(usrid,cid,kind) values(2,5,2);
 事件1：3发起 生活2
 事件1：6发起 健康3
 */
-insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(1,1,0,"event1",23.001000,23.001000,"2014-07-14 16:55:54");
-insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(3,2,0,"event2",25.001000,23.001000,"2014-07-15 08:45:54");
-insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(6,3,0,"event3",23.001020,23.001030,"2014-07-15 08:00:54");
+insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(1,1,0,"event1",23.070000,113.400000,"2014-07-14 16:55:54");
+insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(3,2,0,"event2",23.070000,113.400000,"2014-07-15 08:45:54");
+insert into event(usrid,kind,state,content,latitude,longitude,starttime) values(6,3,0,"event3",23.070000,113.400000,"2014-07-15 08:00:54");
 
 /*
 添加helper
