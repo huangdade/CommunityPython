@@ -9,6 +9,8 @@ import MySQLdb,json
 class dbapi:
 	def __init__(self):
 		self.host="localhost"
+		#self.user="comhelp"
+		#self.passwd="20140629"
 		self.user="root"
 		self.passwd="root"
 		self.dbname="community"
@@ -37,6 +39,15 @@ class dbapi:
 		cursor = self.db.cursor()
 		sql = "update user set state = %s where id = %s"
 		param =(state,uid)
+		cursor.execute(sql,param)
+		self.db.commit()
+		cursor.close()
+		return
+
+	def updateUseLBS(self,latitude,longitude,uid):
+		cursor = self.db.cursor()
+		sql = "update info set latitude = %s , longitude = %s where id = %s"
+		param =(latitude,longitude,uid)
 		cursor.execute(sql,param)
 		self.db.commit()
 		cursor.close()
@@ -73,7 +84,7 @@ class dbapi:
 
 	def getUsermassegeByUserId(self,userid):
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-		sql="select user.name,info.name as realname,info.sex,info.age,info.address,info.illness,info.credit,info.score from user ,info where user.id=%s and info.id=%s"
+		sql="select user.id,user.name,info.name as realname,info.sex,info.age,info.address,info.illness,info.credit,info.score from user ,info where user.id=%s and info.id=%s"
 		param=(userid,userid)
 		cursor.execute(sql,param)
 		result=cursor.fetchone()
@@ -86,6 +97,18 @@ class dbapi:
 		param=(eventid,)
 		cursor.execute(sql,param)
 		result=cursor.fetchone()
+		cursor.close()
+		return result
+
+	def getEventandUserByEventId(self,eventid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="select user.name,content,starttime as time,event.kind as kind,event.id as id, event.latitude as latitude,event.longitude as longitude from event,user where event.id=%s"
+		param=(eventid,)
+		cursor.execute(sql,param)
+		result=cursor.fetchone()
+		result['time'] = result['time'].strftime('%Y-%m-%d %H:%M:%S')
+		result['longitude'] = float(result['longitude'])
+		result['latitude'] = float(result['latitude'])
 		cursor.close()
 		return result
 
@@ -103,6 +126,62 @@ class dbapi:
 		if(not user):
 			return []
 		return self.getEventsByUserId(user["id"])
+
+	#get supports by uid
+	def getSupportsbyUid(self,uid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="select user.name,support.eid,support.content,support.time from support,user where usrid = user.id and usrid = %s"
+		param=(uid,)
+		cursor.execute(sql,param)
+		result=cursor.fetchall()
+		cursor.close()
+		return list(result)
+
+	#get supports by username
+	def getSupportsbyUsername(self,username):
+		user=self.getUserByUserName(username)
+		if(not user):
+			return []
+		return self.getSupportsbyUid(user["id"])
+
+	#insert follow uid->eid
+	def insertFollow(self,uid,eid):
+		cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		cursor.execute("select now()")
+		currentTime=cursor.fetchone()
+		sql = "insert into follow(eid,usrid,time) values(%s,%s,%s)"
+		param = (eid,uid,currentTime['now()'])
+		try:
+			cursor.execute(sql,param)
+			self.db.commit()
+		except:
+			self.db.rollback()
+		cursor.close()
+		return
+
+	#delect follow uid->eid
+	def delectFollow(self,uid,eid):
+		cursor = self.db.cursor()
+		sql = "delete from follow where eid = %s and usrid = %s"
+		param = (eid,uid)
+		try:
+			cursor.execute(sql,param)
+			self.db.commit()
+		except:
+			self.db.rollback()
+		cursor.close()
+		return
+
+	#get follow by uid,eid
+	#if no recode,rerun None;else return dir
+	def getFollow(self,uid,eid):
+		cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql = "select * from follow where eid = %s and usrid = %s"
+		param = (eid,uid)
+		cursor.execute(sql,param)
+		result=cursor.fetchone()
+		cursor.close()
+		return result
 
 	#check if cardid exist
 	#exist return dict
@@ -234,6 +313,7 @@ class dbapi:
 		cursor.execute(sql,param)
 		result = []
 		for row in cursor.fetchall():
+			row['starttime'] = row['starttime'].strftime('%Y-%m-%d %H:%M:%S')
 			result.append(row)
 		cursor.close()
 		return result
@@ -252,7 +332,7 @@ class dbapi:
 		cursor.execute(sql,param)
 		result = []
 		for row in cursor.fetchall():
-			result.append(row)
+			result.append(row['cid'])
 		cursor.close()
 		return result
 
@@ -376,6 +456,16 @@ class dbapi:
 		sql="INSERT INTO relation (usrid, cid, kind) VALUES ('" + u_id + "', '" + r_id + "', '1')"
 		cursor.execute(sql)
 		self.db.commit()
+		cursor.close()
+
+	def addtempRelationByUsername(self, u_name, r_name):
+		result = self.getUserByUserName(u_name)
+		u_id = str(result["id"])
+		result = self.getUserByUserName(r_name)
+		r_id = str(result["id"])
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="INSERT INTO relation (usrid, cid, kind) VALUES ('" + u_id + "', '" + r_id + "', '1')"
+		cursor.execute(sql)
 		cursor.close()
 
 	def addaidhelper(self, u_name, e_id):
@@ -576,6 +666,17 @@ class dbapi:
 		self.updateUserCreditScore(eid,usrid["id"],credit)
 		return {"errorCode":200,"errorDesc":""}
 	#07/10
+
+	def getSupportsByEventId(self,eid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="select * from support where eid=%s"
+		param=(eid,)
+		cursor.execute(sql,param)
+		result=[]
+		for item in cursor.fetchall():
+			item['time'] = item['time'].strftime('%Y-%m-%d %H:%M:%S')
+			result.append(item)
+		return result
 
 	def __del__(self):
 		self.db.close()

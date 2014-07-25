@@ -1,6 +1,7 @@
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
+from tornado.escape import *
 import json
 
 class GetArroundEvent(tornado.web.RequestHandler):
@@ -11,11 +12,11 @@ class GetArroundEvent(tornado.web.RequestHandler):
 		#content =self.request.body
 		content='{"username":"test1"}'
 		j=json.loads(content)
-		user = self.application.dbapi.getUserAllinfobyName(j['username'])
+		user = self.application.dbapi.getUserInfobyName(j['username'])
 		if(user is None):
 			self.write("{'state':2}")
 			print "username not exist"
 			return
-		result = self.application.dbapi.getUserAround(user['longitude'],user['latitude'],150)
-		self.write("{'state':1,aids:"+str(result)+"}")
+		result = self.application.dbapi.getEventAround(user['longitude'],user['latitude'],150)
+		self.write("{'state':1,events:"+json_encode(result)+"}")
 		return

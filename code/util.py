@@ -17,3 +17,15 @@ class util:
 		result=base64.standard_b64encode(avatar.read())
 		avatar.close()
 		return result
+
+	def setAvatarbyUid(self,uid,filestring):
+		avatar=open(os.path.abspath('./static/avatar/'+str(uid)+".png"),"wb");
+		avatar.write(base64.standard_b64decode(filestring))
+		avatar.close()
+
+	def getAvatarbyUid(self,uid):
+		avatar=open(os.path.abspath('./static/avatar/'+str(uid)+".png"),"rb");
+		result=""
+		result=base64.standard_b64encode(avatar.read())
+		avatar.close()
+		return result

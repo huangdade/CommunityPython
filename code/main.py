@@ -3,6 +3,7 @@ import tornado.web
 import tornado.httpserver
 import os,MySQLdb,dbapi,util
 from handler import *
+from push import *
 
 #login url handler
 class IndexHandler(tornado.web.RequestHandler):
@@ -35,10 +36,16 @@ class app(tornado.web.Application):
 			(r"/api/event",EventHandler.EventHandler),
 			(r"/api/updatecid",UpdateCid.UpdateCid),
 			(r"/api/updateuserinfo",UpdateUserInfoHandler.UpdateUserInfoHandler),
-			(r"/api/getAround",GetArroundEvent.GetArroundEvent)]
+			(r"/api/getAround",GetArroundEvent.GetArroundEvent),
+			(r"/api/startfollow",startFollowHandler.startFollowHandler),
+			(r"/api/cancelfollow",cancelFollowHandler.cancelFollowHandler),
+			(r"/api/thirdpartlogin",ThirdPartHandlers.ThirdPartyLoginHandler),
+			(r"/api/thirdpartlogout",ThirdPartHandlers.ThirdPartyLogoutHandler),
+			(r"/api/thirdpartremove",ThirdPartHandlers.ThirdPartyRemoveAccountHandler)]
 		tornado.web.Application.__init__(self,handlers,**settings)
 		self.dbapi=dbapi.dbapi()
 		self.util=util.util()
+		self.push = Push()
 		
 
 if __name__=="__main__":

@@ -17,11 +17,11 @@ class AddrelativesHandler(tornado.web.RequestHandler):
 		row = self.application.dbapi.getRelationByUsername(j['u_name'], j['r_name'])
 		if row == 0:
 			self.application.dbapi.addRelationByUsername(j['u_name'], j['r_name'])
+			self.application.dbapi.addtempRelationByUsername(j['u_name'], j['r_name'])
 			add_message = {'state': 1}
 			print "add relative success"
 		else:
 			add_message = {'state': 0}
 			print "two already has relative relation"
-
 		self.write(add_message)
 		return

@@ -17,4 +17,7 @@ __all__ = ["RegisterHandler",
 					 "EventHandler",
 					 "UpdateCid",
 					 "UpdateUserInfoHandler",
-					 "GetArroundEvent"]
+					 "startFollowHandler",
+					 "cancelFollowHandler",
+					 "GetArroundEvent",
+					 "ThirdPartHandlers"]
