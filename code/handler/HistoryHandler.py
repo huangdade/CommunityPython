@@ -2,6 +2,7 @@
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
+from tornado.escape import *
 import json
 
 class HistoryHandler(tornado.web.RequestHandler):
@@ -9,8 +10,8 @@ class HistoryHandler(tornado.web.RequestHandler):
 		self.write("<p>historyHandler</p><form action='/api/history' method='post'><input type='submit' value='submit'></form>")
 
 	def post(self):
-		#content =self.request.body
-		content='{"name":"test3"}'
+		content =self.request.body
+		#content='{"name":"test3"}'
 		jobj=json.loads(content)
 		user = self.application.dbapi.getUserByUserName(jobj['name'])
 		if(user is None):
@@ -18,8 +19,15 @@ class HistoryHandler(tornado.web.RequestHandler):
 			return
 		uid = user['id']
 		events=self.application.dbapi.getEventsByUserId(uid)
+		for item in events:
+			item['longitude'] = float(item['longitude'])
+			item['latitude'] = float(item['latitude'])
+			item['starttime'] = item['starttime'].strftime('%Y-%m-%d %H:%M:%S')
+			item['endtime'] = item['endtime'].strftime('%Y-%m-%d %H:%M:%S')
 		#result=self.application.dbapi.getEventsByUserName(jobj['name'])
 		supports = self.application.dbapi.getSupportsbyUid(uid)
+		for item in supports:
+			item['time'] = item['time'].strftime('%Y-%m-%d %H:%M:%S')
 
-		self.write('{"state":1,"events":'+str(events)+',"supports":'+str(supports))
+		self.write('{"state":1,"events":'+json_encode(events)+',"supports":'+json_encode(supports))
 		return

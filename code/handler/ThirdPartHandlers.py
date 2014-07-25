@@ -1,5 +1,5 @@
 # coding: utf-8
-# Filename: ThirdPartHandlers.py
+# Filename: handlers.py
 __author__ = 'Administrator'
 
 import tornado.web
@@ -54,6 +54,7 @@ class ThirdPartyLoginHandler(tornado.web.RequestHandler):
         # 其他用户不允许第一个符号是星号。一般的用户名只允许出现字母，数字，空格，和下划线。
         # 首先检查是否已经注册过
         record = self.application.dbapi.getUserByUserName(username)
+        isNewUser = "false"
         if record == None:
             # 如果用户不存在，则新建用户并且插入数据库
             # 新建用户时的参数参考dbapi的代码
@@ -65,21 +66,24 @@ class ThirdPartyLoginHandler(tornado.web.RequestHandler):
                        "password": "",
                        "cardid": 0,
                        "realname": "",
-                       "sex": "",
+                       "sex": 0,
                        "age": 0,
                        "address": "",
                        "illness": ""}
             self.application.dbapi.register(newUser)
             # 再次取用户记录，因为需要获取uid，而uid是系统自动分配的
             record = self.application.dbapi.getUserByUserName(username)
+            isNewUser = "true"
         # 现在新用户与老用户到了同一状态
         # 现在我们认为用户已经登录成功了，需要更新用户的状态为已登录
         # 这一部分可以参考正常的loginhandler
         uid = record["id"]
         self.application.dbapi.updateUserstate(uid, 1) # 登录状态为数字1
         # 返回登录成功的返回值
-        self.write("{\"state\":3}") # 3表示登录成功
+        returnValue = "{'state':3," + "'isNewUser':" + isNewUser + "}";
+        self.write(returnValue) # 3表示登录成功
         print("third party login succeed")
+        print("return: " + returnValue)
         return
 
 # 在第三方登录成功之后，第三方用户状态就与本地用户相同了。这里的登出过程也几乎没有区别
@@ -92,7 +96,8 @@ class ThirdPartyLogoutHandler(tornado.web.RequestHandler):
         # 这里用到了username。按照我的预想，是不需要username的。但是第一版可以简单设计。
         # 这需要我修改几处anroid代码
         # 其他人采用json格式传输数据。我这里并没有采用，而是直接使用参数传递。
-        username = self.get_argument("username")
+        username = "*" + self.get_argument("platform") + self.get_argument("uid")
+        print("username: " + username)
         # 因为假设所有的特权操作都经过了检查，因此不必考虑用户不存在的情况
         record = self.application.dbapi.getUserByUserName(username)
         uid = record["id"]
@@ -132,3 +137,22 @@ class ThirdPartyRemoveAccountHandler(tornado.web.RequestHandler):
         self.application.dbapi.cancelUser(uid)
         # 用户已删除，这是返回登录成功的返回值，暗示了用户已删除
         self.write("{\"state\":3}")
+
+class ThirdPartyFillUserInfoHandler(tornado.web.RequestHandler):
+    def post(self):
+        username = "*" + self.get_argument("platform") + self.get_argument("uid")
+        newUserInfo = {
+            "sex": self.get_argument("sex"),
+            "address": self.get_argument("address")
+        }
+        user = self.application.dbapi.getUserByUserName(username)
+        if(user is None):
+            self.write("{'state':1}")
+            print "username not exist"
+            return
+        print("username: " + username)
+        print("sex: " + newUserInfo["sex"])
+        print("address: " + newUserInfo["address"])
+        result = self.application.dbapi.updateUserinfo(user['id'], newUserInfo)
+        self.write("{'result':"+ str(result)+"}")
+        print("UpdateUserInfo success")
