@@ -9,10 +9,10 @@ import MySQLdb,json
 class dbapi:
 	def __init__(self):
 		self.host="localhost"
-		#self.user="comhelp"
-		#self.passwd="20140629"
-		self.user="root"
-		self.passwd="root"
+		self.user="comhelp"
+		self.passwd="20140629"
+		#self.user="root"
+		#self.passwd="root"
 		self.dbname="community"
 		self.charset="utf8"
 		self.db=MySQLdb.connect(host=self.host,user=self.user,passwd=self.passwd,db=self.dbname,charset=self.charset)
@@ -32,6 +32,15 @@ class dbapi:
 		param=(username,)
 		cursor.execute(sql,param)
 		result=cursor.fetchone()
+		cursor.close()
+		return result
+
+	def getHelperInfoByEid(self,eid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="select user.name as username,user.id as uid from helper,user where helper.eid=%s and helper.usrid = user.id"
+		param=(eid,)
+		cursor.execute(sql,param)
+		result=cursor.fetchall()
 		cursor.close()
 		return result
 
@@ -102,7 +111,8 @@ class dbapi:
 
 	def getEventandUserByEventId(self,eventid):
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-		sql="select user.name,content,starttime as time,event.kind as kind,event.id as id, event.latitude as latitude,event.longitude as longitude from event,user where event.id=%s"
+		sql="""select user.name as username,user.id as userid,content,starttime as time,event.kind as kind,event.id as eventid, event.latitude as latitude,event.longitude as longitude  from event,user
+		 		where event.id=%s and user.id = event.usrid"""
 		param=(eventid,)
 		cursor.execute(sql,param)
 		result=cursor.fetchone()
@@ -126,6 +136,15 @@ class dbapi:
 		if(not user):
 			return []
 		return self.getEventsByUserId(user["id"])
+
+	def getSupportBySid(self,sid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="select * from support where id = %s"
+		param=(sid,)
+		cursor.execute(sql,param)
+		result=cursor.fetchone()
+		cursor.close()
+		return result
 
 	#get supports by uid
 	def getSupportsbyUid(self,uid):
@@ -151,26 +170,32 @@ class dbapi:
 		currentTime=cursor.fetchone()
 		sql = "insert into follow(eid,usrid,time) values(%s,%s,%s)"
 		param = (eid,uid,currentTime['now()'])
+		state = 1
 		try:
 			cursor.execute(sql,param)
 			self.db.commit()
+			state = 1
 		except:
 			self.db.rollback()
+			state = 0
 		cursor.close()
-		return
+		return state
 
 	#delect follow uid->eid
 	def delectFollow(self,uid,eid):
 		cursor = self.db.cursor()
 		sql = "delete from follow where eid = %s and usrid = %s"
 		param = (eid,uid)
+		state = 1
 		try:
 			cursor.execute(sql,param)
 			self.db.commit()
+			state = 1
 		except:
 			self.db.rollback()
+			state = 0
 		cursor.close()
-		return
+		return state
 
 	#get follow by uid,eid
 	#if no recode,rerun None;else return dir
@@ -180,6 +205,49 @@ class dbapi:
 		param = (eid,uid)
 		cursor.execute(sql,param)
 		result=cursor.fetchone()
+		cursor.close()
+		return result
+
+	def getFollowerCidByEid(self,eid):
+		cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql = "select user.cid from follow,user where eid = %s and user.id = follow.usrid"
+		param = (eid,)
+		cursor.execute(sql,param)
+		result = []
+		for row in cursor.fetchall():
+			result.append(row['cid'])
+		cursor.close()
+		return result
+
+	def getFollowsByEventId(self,eid):
+		cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql = "select count(*) as count from follow where eid = %s"
+		param = (eid,)
+		cursor.execute(sql,param)
+		result=cursor.fetchone()
+		cursor.close()
+		return result
+
+
+	def getHelpersCidbyEid(self,eid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="select cid from helper,user where eid = %s and helper.usrid = user.id"
+		param=(eid,)
+		cursor.execute(sql,param)
+		result = []
+		for row in cursor.fetchall():
+			result.append(row['cid'])
+		cursor.close()
+		return result
+
+	def getRelativesCidbyUid(self,uid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="select cid from relation,user where usrid = %s and usrid = user.id"
+		param=(eid,)
+		cursor.execute(sql,param)
+		result = []
+		for row in cursor.fetchall():
+			result.append(row['cid'])
 		cursor.close()
 		return result
 
@@ -246,25 +314,13 @@ class dbapi:
 		self.db.commit()
 		cursor.close()
 		return
-		
-	#insert support mseeage in event
-	#pre condiction:user.id，event.id exist;event.state = 0
-	#after: uptate assist in event
-	def supportmessageinsert(self,content):
-		cursor = self.db.cursor()
-		sql ="update event set assist= %s where id = %s"
-		param = (content["assist"],content["eventid"])
-		cursor.execute(sql,param)
-		self.db.commit()
-		cursor.close()
-		return
 
 	#get all relativeName by user.id
 	#return a list contain all relations(including uid)
 	def getAllRelativeNamebyUid(self,uid):
 		cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-		sql = "select * from relation where usrid = %s"
-		param = (uid,)
+		sql = "select * from relation where usrid = %s and kind = %s"
+		param = (uid,1)
 		rlist = []
 		rlist.append(uid)
 		cursor.execute(sql,param)
@@ -283,7 +339,7 @@ class dbapi:
 		cursor.execute(sql,param)
 		self.db.commit()
 		cursor.close()
-		return
+		return currentTime['now()']
 
 	#cancle a user by user(id)
 	#pre condiction: uid exist
@@ -304,11 +360,12 @@ class dbapi:
 		cursor = self.db. cursor(cursorclass=MySQLdb.cursors.DictCursor)
 		#sql = "select round(6378.138*2*asin(sqrt(pow(sin( (event.latitude*pi()/180-(%s)*pi()/180)/2),2)+cos(event.latitude*pi()/180)*cos((%s)*pi()/180)* pow(sin( (event.longitude*pi()/180-(%s)*pi()/180)/2),2)))) from event"
 		#param = (lat,lat,lon)
-		sql = """select event.id,user.name,event.kind,event.content,event.assist,event.starttime from event,user where 
+		sql = """select event.id,user.name,event.kind,event.content,event.starttime,video,audio from event,user where 
 				 exists(select id from event where event.latitude <= (%s+1) and event.latitude >= (%s-1) and longitude <= (%s+1) and longitude>=(%s-1))
 				 and event.usrid = user.id
 				 and event.state = 0
-				 and round(6378.138*2*asin(sqrt(pow(sin( (event.latitude*pi()/180-(%s)*pi()/180)/2),2)+cos(event.latitude*pi()/180)*cos((%s)*pi()/180)* pow(sin( (event.longitude*pi()/180-(%s)*pi()/180)/2),2)))) < %s """
+				 and round(6378.138*2*asin(sqrt(pow(sin( (event.latitude*pi()/180-(%s)*pi()/180)/2),2)+cos(event.latitude*pi()/180)*cos((%s)*pi()/180)* pow(sin( (event.longitude*pi()/180-(%s)*pi()/180)/2),2)))) < %s 
+				 ORDER BY starttime DESC"""
 		param = (lat,lat,lon,lon,lat,lat,lon,distance)
 		cursor.execute(sql,param)
 		result = []
@@ -335,6 +392,28 @@ class dbapi:
 			result.append(row['cid'])
 		cursor.close()
 		return result
+
+	def getUserAround(self,lon,lat,distance):
+		cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql = """select user.name as name from user,info where
+				exists(select id from info where latitude <= (%s+1) and latitude >= (%s-1) and longitude <= (%s+1) and longitude>=(%s-1))
+				and user.id = info.id
+				and round(6378.138*2*asin(sqrt(pow(sin( (info.latitude*pi()/180-(%s)*pi()/180)/2),2)+cos(info.latitude*pi()/180)*cos((%s)*pi()/180)* pow(sin( (info.longitude*pi()/180-(%s)*pi()/180)/2),2)))) < %s"""
+		param = (lat,lat,lon,lon,lat,lat,lon,distance)
+		cursor.execute(sql,param)
+		sqlre = cursor.fetchall()
+		cursor.close
+		result = []
+		if(sqlre):
+			for row in sqlre:
+				info = {}
+				info['username'] = row['name']
+				result.append(info)
+			data={'state':1,'users':result}
+		else:
+			data={'state':0}#the user not exist,return state 0
+		#result=json.dumps(data)
+		return data
 
 	#updateuser credit score in info,use for givecredit
 	#pre cond:eid,uid exist,score >=0
@@ -447,25 +526,34 @@ class dbapi:
 		self.db.commit()
 		cursor.close()
 
-	def addRelationByUsername(self, u_name, r_name):
+	def addRelationByUsername(self, u_name, r_name,kind):
 		result = self.getUserByUserName(u_name)
 		u_id = str(result["id"])
 		result = self.getUserByUserName(r_name)
 		r_id = str(result["id"])
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-		sql="INSERT INTO relation (usrid, cid, kind) VALUES ('" + u_id + "', '" + r_id + "', '1')"
+		sql="INSERT INTO relation (usrid, cid, kind) VALUES ('" + u_id + "', '" + r_id + "', '"+kind+"')"
 		cursor.execute(sql)
 		self.db.commit()
 		cursor.close()
 
-	def addtempRelationByUsername(self, u_name, r_name):
+	def addtempRelationByUsername(self, u_name, r_name,kind):
 		result = self.getUserByUserName(u_name)
 		u_id = str(result["id"])
 		result = self.getUserByUserName(r_name)
 		r_id = str(result["id"])
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-		sql="INSERT INTO relation (usrid, cid, kind) VALUES ('" + u_id + "', '" + r_id + "', '1')"
+		sql="INSERT INTO temprelation (uid, cid, kind) VALUES ('" + u_id + "', '" + r_id + "', '"+kind+"')"
 		cursor.execute(sql)
+		self.db.commit()
+		cursor.close()
+
+	def deletetemprelation(self,uid,cid):
+		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+		sql="delete from temprelation where uid = %s,cid =%s"
+		param=(uid,cid)
+		cursor.execute(sql,param)
+		self.db.commit()
 		cursor.close()
 
 	def addaidhelper(self, u_name, e_id):
@@ -527,51 +615,85 @@ class dbapi:
 			else:
 				cursor.execute("select now()")
 				currentTime=cursor.fetchone()
+				sql = "select * from event where usrid = %s and kind = %s and latitude = %s and longitude = %s and TIMESTAMPDIFF(MINUTE,%s,starttime)<= 10"
+				param = (usrid["id"],message["kind"],message['latitude'],message['longitude'],currentTime['now()'])
+				cursor.execute(sql,param)
+				if(cursor.fetchall()):
+					return {"state":4,"errorDesc":"cannnot send the same message in 10 minute"}
 				sql="insert into event (usrid,kind,state,content,starttime,latitude,longitude) values (%s,%s,%s,%s,%s,%s,%s)"
 				param=(usrid["id"],message["kind"],0,message["content"],currentTime['now()'],message['latitude'],message['longitude'])
-				if("assist" in message):
-					sql="insert into event (usrid,kind,state,content,assist,starttime,latitude,longitude) values (%s,%s,%s,%s,%s,%s,%s,%s)"
-					param=(usrid["id"],message["kind"],0,message["content"],message["assist"],currentTime['now()'],message['latitude'],message['longitude'])
 				cursor.execute(sql,param)
 				self.db.commit()
 
-				#return last insert id
 				cursor.execute("select last_insert_id()")
-				return {"state":1,"errorDesc":"","eventid":cursor.fetchone()["last_insert_id()"]}
+				eid = cursor.fetchone()["last_insert_id()"]
+				if(message['videosign'] =="1" and message['audiosign'] =="1"):
+					slef.UpdateEventVideoAndAudio(eid)
+				elif(message['videosign'] =="1" and message['audiosign'] =="0"):
+					slef.UpdateEventVideo(eid)
+				elif(message['videosign'] =="0" and message['audiosign'] =="1"):
+					slef.UpdateEventAudio(eid)
+				return {"state":1,"errorDesc":"","eventid":eid}
 		cursor.close()
 
+	def UpdateEventVideoAndAudio(self,eid):
+		cursor = self.db.cursor()
+		sql = "update event set video = %s,audio = %s where id = %s"
+		param = ('./static/Video/'+str(uid)+'/'+str(uid)+'.3gp','./static/Audio/'+str(uid)+'/'+str(uid)+'.amr',eid)
+		cursor.execute(sql,param)
+		self.db.commit()
+		cursor.close()
+		return
+
+	def UpdateEventVideo(self,eid):
+		cursor = self.db.cursor()
+		sql = "update event set video = %s where id = %s"
+		param = ('./static/Video/'+str(uid)+'/'+str(uid)+'.3gp',eid)
+		cursor.execute(sql,param)
+		self.db.commit()
+		cursor.close()
+		return
+
+	def UpdateEventAudio(self,eid):
+		cursor = self.db.cursor()
+		sql = "update event set audio = %s where id = %s"
+		param = ('./static/Audio/'+str(uid)+'/'+str(uid)+'.amr',eid)
+		cursor.execute(sql,param)
+		self.db.commit()
+		cursor.close()
+		return
 	#07/09
 
 	#seach user by sex,age,kind and return the row of table user
 	# it has 8 options
 	def searchUserbySexAgeKind(self,content):
 		cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-		if(content['sex']):
-			if(content['age']):
-				if(content['kind']):
-					sql="select user.id from user,info where info.sex=%s and info.age=%s and user.kind=%s"
-					param=(content['sex'],content['age'],content['kind'])
+		if('sex' in content):
+			if('fromage' in content):
+				if('kind' in content):
+					sql="select user.id from user,info where info.sex=%s and info.age>=%s and info.age<=%s and user.kind=%s and user.id = info.id"
+					param=(content['sex'],content['fromage'],content['endage'],content['kind'])
 				else:
-					sql="select user.id from user,info where info.sex=%s and info.age=%s"
-					param=(content['sex'],content['age'])
+					sql="select user.id from user,info where info.sex=%s and info.age>=%s and info.age<=%s and user.id = info.id"
+					param=(content['sex'],content['fromage'],content['endage'])
 			else:
-				if(content['kind']):
-					sql="select user.id from user,info where info.sex=%s and user.kind=%s"
+				if('kind' in content):
+					sql="select user.id from user,info where info.sex=%s and user.kind=%s and user.id = info.id"
 					param=(content['sex'],content['kind'])
 				else:
-					sql="select user.id from user,info where info.sex=%s"
+					sql="select info.id from info,user where info.sex=%s and user.id = info.id"
 					param=(content['sex'],)
 		else:
-			if(content['age']):
-				if(content['kind']):
-					sql="select user.id from user,info where info.age=%s and user.kind=%s"
-					param=(content['age'],content['kind'])
+			if('fromage' in content):
+				if('kind' in content):
+					sql="select user.id from user,info where info.age>=%s and info.age<=%s and user.kind=%s and user.id = info.id"
+					param=(content['fromage'],content['endage'],content['kind'])
 				else:
-					sql="select user.id from user,info where info.age=%s"
-					param=(content['age'],)
+					sql="select user.id from user,info where info.age>=%s and info.age<=%s and user.id = info.id"
+					param=(content['fromage'],content['endage'])
 			else:
-				if(content['kind']):
-					sql="select user.id from user,info where user.kind=%s"
+				if('kind' in content):
+					sql="select user.id from user,info where user.kind=%s and user.id = info.id"
 					param=(content['kind'],)
 				else:
 					data=[{'state':0}]#input is null return state 0
@@ -579,13 +701,16 @@ class dbapi:
 					return result
 		cursor.execute(sql,param)
 		result1=cursor.fetchall()
+		cursor.close()
 		if(result1):
 			userlist=[]
 			for x in result1:
-				userlist.append(self.getUserByUserId(x['id']))
-			data=[{'state':1},userlist]#return the user table successly
+				info = {}
+				info['username'] = self.getUserByUserId(x['id'])['name']
+				userlist.append(info)
+			data={'state':1,'users':userlist}#return the user table successly
 		else:
-			data=[{'state':2}]#the user not exist,return state 2
+			data={'state':0}#the user not exist,return state 0
 		result=json.dumps(data)
 		return result
 
@@ -644,7 +769,7 @@ class dbapi:
 			cursor=self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 			cursor.execute("select now()")
 			currentTime=cursor.fetchone()
-			sql="insert into support (eid,usrid,content,time) values (%s,%s,%s.%s)"
+			sql="insert into support (eid,usrid,content,time) values (%s,%s,%s,%s)"
 			param=(eid,self.getUserIdByUserName(username)["id"],message["content"],currentTime['now()'])
 			cursor.execute(sql,param)
 			self.db.commit()

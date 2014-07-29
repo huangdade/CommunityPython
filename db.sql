@@ -100,8 +100,9 @@ CREATE TABLE event
 	usrid int NOT NULL,
 	kind int NOT NULL,
 	state int NOT NULL,
-	content blob NOT NULL,
-	assist blob,
+	content blob,
+	video blob,
+	audio blob,
 	latitude DECIMAL(12,7),
 	longitude DECIMAL(12,7),
 	starttime datetime,
@@ -194,7 +195,7 @@ CREATE TABLE temprelation
 	foreign key(cid) references user(id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*
-添加6用户（3男3女）：
+添加6用户（3男3女）:
 */
 insert into user(name,kind,password,state) values("test1",1,"1",1);
 insert into user(name,kind,password,state) values("test2",2,"t2",1);

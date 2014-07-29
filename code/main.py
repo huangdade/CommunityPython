@@ -17,31 +17,42 @@ class app(tornado.web.Application):
 			"debug": True
 		}
 		handlers=[(r"/",IndexHandler),
-			(r"/api/login",LoginHandler.LoginHandler),
-			(r"/api/register",RegisterHandler.RegisterHandler),
-			(r"/api/userauthentication",AuthenHandler.AuthenHandler),
-			(r"/api/logout",LogoutHandler.LogoutHandler),
-			(r"/api/cancel",CancelHandler.CancelHandler),
-			(r"/api/checkrelatives",CheckrelativesHandler.CheckrelativesHandler),
-			(r"/api/deleterelatives",DeleterelativesHandler.DeleterelativesHandler),
-			(r"/api/addrelatives",AddrelativesHandler.AddrelativesHandler),
+			(r"/api/login",UserHandler.LoginHandler),
+			(r"/api/register",UserHandler.RegisterHandler),
+			(r"/api/userauthentication",UserHandler.AuthenHandler),
+			(r"/api/logout",UserHandler.LogoutHandler),
+			(r"/api/cancel",UserHandler.CancelHandler),
+			(r"/api/updatecid",UserHandler.UpdateCid),
+			(r"/api/search",UserHandler.SearchHandler),
+			(r"/api/getavatar",UserHandler.GetAvatarHandler),
+			
+			(r"/api/checkrelatives",RelativesHandler.CheckrelativesHandler),
+			(r"/api/deleterelatives",RelativesHandler.DeleterelativesHandler),
+			(r"/api/addrelatives",RelativesHandler.AddrelativesHandler),
+
 			(r"/api/history",HistoryHandler.HistoryHandler),
-			(r"/api/helpmessage",HelpmessageHandler.HelpmessageHandler),
-			(r"/api/supportmessage",SupportmessageHandler.SupportmessageHandler),
-			(r"/api/finish",FinishHandler.FinishHandler),
-			(r"/api/givecredit",GivecreditHandler.GivecreditHandler),
-			(r"/api/addaid",AddaidHandler.AddaidHandler),
-			(r"/api/sendsupport",SendsupportHandler.SendsupportHandler),
-			(r"/api/quitaid",QuitaidHandler.QuitaidHandler),
+
+			(r"/api/helpmessage",EventHandler.HelpmessageHandler),
+			(r"/api/supportmessage",EventHandler.SupportmessageHandler),
+			(r"/api/finish",EventHandler.FinishHandler),
+			(r"/api/givecredit",EventHandler.GivecreditHandler),
+			(r"/api/addaid",EventHandler.AddaidHandler),
+			(r"/api/sendsupport",EventHandler.SendsupportHandler),
+			(r"/api/quitaid",EventHandler.QuitaidHandler),
 			(r"/api/event",EventHandler.EventHandler),
-			(r"/api/updatecid",UpdateCid.UpdateCid),
-			(r"/api/updateuserinfo",UpdateUserInfoHandler.UpdateUserInfoHandler),
+
+			(r"/api/getuserinfo",UserInfoHandler.GetUserInfoHandler),
+			(r"/api/updateuserinfo",UserInfoHandler.UpdateUserInfoHandler),
+
 			(r"/api/getAround",GetArroundEvent.GetArroundEvent),
-			(r"/api/startfollow",startFollowHandler.startFollowHandler),
-			(r"/api/cancelfollow",cancelFollowHandler.cancelFollowHandler),
-			(r"/api/thirdpartlogin",ThirdPartHandlers.ThirdPartyLoginHandler),
-			(r"/api/thirdpartlogout",ThirdPartHandlers.ThirdPartyLogoutHandler),
-			(r"/api/thirdpartremove",ThirdPartHandlers.ThirdPartyRemoveAccountHandler)]
+
+			(r"/api/startfollow",FollowHandler.startFollowHandler),
+			(r"/api/cancelfollow",FollowHandler.cancelFollowHandler),
+			
+			(r"/api/thirdpartylogin",ThirdPartHandlers.ThirdPartyLoginHandler),
+			(r"/api/thirdpartylogout",ThirdPartHandlers.ThirdPartyLogoutHandler),
+			(r"/api/thirdpartyremove",ThirdPartHandlers.ThirdPartyRemoveAccountHandler),
+			(r"/api/thirdpartyfilluserinfo",ThirdPartHandlers.ThirdPartyFillUserInfoHandler)]
 		tornado.web.Application.__init__(self,handlers,**settings)
 		self.dbapi=dbapi.dbapi()
 		self.util=util.util()
